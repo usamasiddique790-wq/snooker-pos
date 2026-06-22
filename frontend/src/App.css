@@ -666,3 +666,37 @@
   border-radius: 6px;
   cursor: pointer;
 }
+
+.admin-tabs {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.admin-tabs button {
+  padding: 10px 16px;
+  border: none;
+  background: #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.admin-tabs .active-tab {
+  background: #111;
+  color: white;
+}
+
+.products-table {
+  display: grid;
+  gap: 10px;
+}
+
+.product-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1.2fr auto auto;
+  gap: 10px;
+  align-items: center;
+  background: #f3f4f6;
+  padding: 12px;
+  border-radius: 8px;
+}
