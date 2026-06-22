@@ -40,6 +40,12 @@ const [editUserForm, setEditUserForm] = useState({
   password: "",
   role: "cashier",
 });
+// order management state
+const [orderTable, setOrderTable] = useState(null);
+const [orderForm, setOrderForm] = useState({
+  product_id: "",
+  quantity: 1,
+});
 // product management state
 const [adminTab, setAdminTab] = useState("users");
 const [products, setProducts] = useState([]);
@@ -286,7 +292,7 @@ const deleteProduct = async (id) => {
 
     console.log("END RESPONSE:", res.data);
 
-    setInvoice(res.data.session);
+    setInvoice(res.data);
 
     const freshTables = await axios.get(
       `${API}/tables/live`,
@@ -297,6 +303,29 @@ const deleteProduct = async (id) => {
   } catch (err) {
     console.log("END ERROR:", err.response?.data || err.message);
     alert(err.response?.data?.error || err.message || "End game error");
+  }
+};
+//
+const addProductToSession = async (e) => {
+  e.preventDefault();
+
+  try {
+    await axios.post(
+      `${API}/sessions/${orderTable.session_id}/products`,
+      {
+        product_id: Number(orderForm.product_id),
+        quantity: Number(orderForm.quantity),
+      },
+      getAuthHeaders()
+    );
+
+    alert("Product added to table bill");
+    setOrderTable(null);
+    setOrderForm({ product_id: "", quantity: 1 });
+    fetchTables();
+    fetchProducts();
+  } catch (err) {
+    alert(err.response?.data?.error || "Product add failed");
   }
 };
 // DRAG AND DROP HANDLERS
@@ -798,23 +827,35 @@ if (!user) {
                           Return
                         </button>
                         {isRunning ? (
-                          <button
-                            className="small-button danger"
-                            type="button"
-                            onClick={() => endGame(status.session_id)}
-                          >
-                            End Game
-                          </button>
-                        ) : (
-                          <button
-                            className="small-button"
-                            type="button"
-                            onClick={() => startGame(tableId)}
-                          >
-                            Start Game
-                          </button>
-                          
-                        )}
+  <>
+    <button
+      className="small-button"
+      type="button"
+      onClick={() => {
+        setOrderTable(status);
+        fetchProducts();
+      }}
+    >
+      Add Product
+    </button>
+
+    <button
+      className="small-button danger"
+      type="button"
+      onClick={() => endGame(status.session_id)}
+    >
+      End Game
+    </button>
+  </>
+) : (
+  <button
+    className="small-button"
+    type="button"
+    onClick={() => startGame(tableId)}
+  >
+    Start Game
+  </button>
+)}
 {invoice && (
   <div className="invoice-overlay">
     <div className="invoice-box">
@@ -825,51 +866,101 @@ if (!user) {
 
       <div className="invoice-row">
         <span>Invoice No</span>
-        <strong>#{invoice.id}</strong>
+        <strong>#{invoice.session.id}</strong>
       </div>
 
       <div className="invoice-row">
         <span>Table</span>
-        <strong>Table {invoice.table_id}</strong>
+        <strong>Table {invoice.session.table_id}</strong>
       </div>
 
       <div className="invoice-row">
         <span>Start Time</span>
-        <strong>{new Date(invoice.start_time).toLocaleTimeString()}</strong>
+        <strong>
+          {new Date(invoice.session.start_time).toLocaleTimeString()}
+        </strong>
       </div>
 
       <div className="invoice-row">
         <span>End Time</span>
-        <strong>{new Date(invoice.end_time).toLocaleTimeString()}</strong>
+        <strong>
+          {new Date(invoice.session.end_time).toLocaleTimeString()}
+        </strong>
       </div>
 
       <div className="invoice-row">
         <span>Duration</span>
-        <strong>{invoice.duration_minutes} min</strong>
+        <strong>{invoice.session.duration_minutes} min</strong>
       </div>
 
       <div className="invoice-row">
         <span>Status</span>
-        <strong>{invoice.status}</strong>
+        <strong>{invoice.session.status}</strong>
       </div>
 
+      <div className="invoice-row">
+        <span>Game Charges</span>
+        <strong>Rs {invoice.game_total}</strong>
+      </div>
+
+      {invoice.products?.length > 0 && (
+        <>
+          <hr />
+
+          <h3 style={{ textAlign: "center" }}>Products</h3>
+
+          {invoice.products.map((item, index) => (
+            <div className="invoice-row" key={index}>
+              <span>
+                {item.name} x {item.quantity}
+              </span>
+
+              <strong>
+                Rs {item.total}
+              </strong>
+            </div>
+          ))}
+
+          <div className="invoice-row">
+            <span>Products Total</span>
+            <strong>Rs {invoice.products_total}</strong>
+          </div>
+        </>
+      )}
+
+      <hr />
+
       <div className="invoice-total">
-        <span>Total</span>
-        <span>Rs {invoice.amount}</span>
-    </div>
+        <span>Grand Total</span>
+        <span>Rs {invoice.grand_total}</span>
+      </div>
 
       <div className="invoice-actions">
-        <button className="print-btn" onClick={() => window.print()}>
+        <button
+          className="print-btn"
+          onClick={() => window.print()}
+        >
           Print
         </button>
 
-        <button className="close-btn" onClick={() => setInvoice(null)}>
+        <button
+          className="close-btn"
+          onClick={() => setInvoice(null)}
+        >
           Close
         </button>
+        {orderTable && (
+  <div className="invoice-overlay">
+    <form className="invoice-box" onSubmit={addProductToSession}>
+      ...
+    </form>
+  </div>
+)} 
       </div>
     </div>
   </div>
-)}                      </div>
+)}     
+                   </div>
                     </section>
                   );
                 })}

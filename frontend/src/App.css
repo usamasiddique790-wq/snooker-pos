@@ -699,4 +699,11 @@
   background: #f3f4f6;
   padding: 12px;
   border-radius: 8px;
+}.invoice-box select,
+.invoice-box input {
+  width: 100%;
+  padding: 11px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
 }
