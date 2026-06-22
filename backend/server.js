@@ -3,15 +3,36 @@ const cors = require("cors");
 const pool = require("./db");
 
 const app = express();
-
+const JWT_SECRET = "snooker_pos_secret_key";
 app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("POS API running");
 });
+// User registration API (ADMIN)
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+// Admin user create API
+app.post("/users/create-admin", async (req, res) => {
+  try {
+    const { username, password } = req.body;
 
-// Products APIs
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const result = await pool.query(
+      "INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, role",
+      [username, hashedPassword, "admin"]
+    );
+
+    res.json({
+      message: "Admin created successfully",
+      user: result.rows[0],
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // Add snooker table
 app.post("/snooker-tables", async (req, res) => {
   try {
@@ -33,23 +54,61 @@ app.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
     const result = await pool.query(
-      "SELECT id, username, role FROM users WHERE username = $1 AND password = $2",
-      [username, password]
+      "SELECT * FROM users WHERE username = $1",
+      [username]
     );
 
     if (result.rows.length === 0) {
       return res.status(401).json({ error: "Invalid username or password" });
     }
 
+    const user = result.rows[0];
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid username or password" });
+    }
+
+    const token = jwt.sign(
+  {
+    id: user.id,
+    username: user.username,
+    role: user.role,
+  },
+  JWT_SECRET,
+  { expiresIn: "1d" }
+);
     res.json({
       message: "Login successful",
-      user: result.rows[0],
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+      },
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
 
+  if (!authHeader) {
+    return res.status(401).json({ error: "Access denied. No token provided." });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    res.status(401).json({ error: "Invalid or expired token." });
+  }
+};
 // Get all snooker tables
 app.get("/snooker-tables", async (req, res) => {
   try {
@@ -63,7 +122,7 @@ app.get("/snooker-tables", async (req, res) => {
   }
 });
 // Start Game API
-app.post("/sessions/start", async (req, res) => {
+app.post("/sessions/start", verifyToken, async (req, res) => {
   try {
     const { table_id } = req.body;
 
@@ -96,7 +155,7 @@ app.post("/sessions/start", async (req, res) => {
   }
 });
 // End Game API
-app.post("/sessions/end", async (req, res) => {
+app.post("/sessions/end", verifyToken, async (req, res) => {
   try {
     const { session_id } = req.body;
 
@@ -163,7 +222,7 @@ app.post("/sessions/end", async (req, res) => {
     });
   }
 });
-app.get("/sessions", async (req, res) => {
+app.get("/sessions", verifyToken, async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT 
@@ -224,7 +283,7 @@ app.get("/sessions/live/:id", async (req, res) => {
     });
   }
 });
-app.get("/tables/live", async (req, res) => {
+app.get("/tables/live", verifyToken, async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT 
