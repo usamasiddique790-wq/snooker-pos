@@ -1,3 +1,5 @@
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const express = require("express");
 const cors = require("cors");
 
@@ -6,6 +8,7 @@ const userRoutes = require("./routes/user.routes");
 const tableRoutes = require("./routes/table.routes");
 const sessionRoutes = require("./routes/session.routes");
 const productRoutes = require("./routes/product.routes");
+
 
 const app = express();
 
