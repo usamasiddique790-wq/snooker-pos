@@ -7,6 +7,25 @@ const JWT_SECRET = "snooker_pos_secret_key";
 app.use(cors());
 app.use(express.json());
 
+// Middleware to verify JWT token
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).json({ error: "Access denied. No token provided." });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    res.status(401).json({ error: "Invalid or expired token." });
+  }
+};
+
 app.get("/", (req, res) => {
   res.send("POS API running");
 });
@@ -27,6 +46,34 @@ app.post("/users/create-admin", async (req, res) => {
 
     res.json({
       message: "Admin created successfully",
+      user: result.rows[0],
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+// User creation API (staff and cashier) - only admin can create users
+app.post("/users/create", verifyToken, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only admin can create users" });
+    }
+
+    const { username, password, role } = req.body;
+
+    if (!["admin", "cashier", "staff"].includes(role)) {
+      return res.status(400).json({ error: "Invalid role" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const result = await pool.query(
+      "INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, role, created_at",
+      [username, hashedPassword, role]
+    );
+
+    res.json({
+      message: "User created successfully",
       user: result.rows[0],
     });
   } catch (err) {
@@ -92,23 +139,23 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
 
-  if (!authHeader) {
-    return res.status(401).json({ error: "Access denied. No token provided." });
-  }
-
-  const token = authHeader.split(" ")[1];
-
+// Get all users (only admin can view)
+app.get("/users", verifyToken, async (req, res) => {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only admin can view users" });
+    }
+
+    const result = await pool.query(
+      "SELECT id, username, role, created_at FROM users ORDER BY id DESC"
+    );
+
+    res.json(result.rows);
   } catch (err) {
-    res.status(401).json({ error: "Invalid or expired token." });
+    res.status(500).json({ error: err.message });
   }
-};
+});
 // Get all snooker tables
 app.get("/snooker-tables", async (req, res) => {
   try {
