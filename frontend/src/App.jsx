@@ -15,11 +15,24 @@ function App() {
   const [stageTables, setStageTables] = useState([]);
   const [draggingTable, setDraggingTable] = useState(null);
   const [invoice, setInvoice] = useState(null);
-  const [user, setUser] = useState(null);
-const [loginForm, setLoginForm] = useState({
-  username: "",
-  password: "",
-});
+
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  const [loginForm, setLoginForm] = useState({
+    username: "",
+    password: "",
+  });
+
+  const getAuthHeaders = () => {
+    return {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    };
+  };
   const tableStatusMap = tables.reduce((map, table) => {
     map[table.table_id] = table;
     return map;
@@ -27,8 +40,7 @@ const [loginForm, setLoginForm] = useState({
 
   const fetchTables = async () => {
     try {
-      const res = await axios.get(`${API}/tables/live`);
-      setTables(res.data);
+      const res = await axios.get(`${API}/tables/live`, getAuthHeaders());
     } catch (err) {
       console.error("API ERROR:", err);
     }
@@ -45,6 +57,10 @@ const [loginForm, setLoginForm] = useState({
 
   try {
     const res = await axios.post(`${API}/login`, loginForm);
+
+    localStorage.setItem("token", res.data.token);
+    localStorage.setItem("user", JSON.stringify(res.data.user));
+
     setUser(res.data.user);
   } catch (err) {
     alert(err.response?.data?.error || "Login failed");
@@ -53,30 +69,57 @@ const [loginForm, setLoginForm] = useState({
 //start game API
   const startGame = async (tableId) => {
   try {
-    const res = await axios.post(`${API}/sessions/start`, {
-      table_id: tableId,
-    });
+    const res = await axios.post(
+      `${API}/sessions/start`,
+      { table_id: tableId },
+      getAuthHeaders()
+    );
 
     console.log("START RESPONSE:", res.data);
-    await fetchTables();
+
+    const freshTables = await axios.get(
+      `${API}/tables/live`,
+      getAuthHeaders()
+    );
+
+    console.log("FRESH TABLES:", freshTables.data);
+
+    setTables(freshTables.data);
   } catch (err) {
     console.log("START ERROR:", err.response?.data || err.message);
     alert(err.response?.data?.error || err.message || "Start game error");
   }
 };
+//end game API
   const endGame = async (sessionId) => {
   try {
-    const res = await axios.post(`${API}/sessions/end`, {
-      session_id: sessionId,
-    });
+    if (!sessionId) {
+      alert("Session ID missing");
+      return;
+    }
+
+    const res = await axios.post(
+      `${API}/sessions/end`,
+      { session_id: sessionId },
+      getAuthHeaders()
+    );
+
+    console.log("END RESPONSE:", res.data);
 
     setInvoice(res.data.session);
-    await fetchTables();
+
+    const freshTables = await axios.get(
+      `${API}/tables/live`,
+      getAuthHeaders()
+    );
+
+    setTables(freshTables.data);
   } catch (err) {
+    console.log("END ERROR:", err.response?.data || err.message);
     alert(err.response?.data?.error || err.message || "End game error");
   }
 };
-
+// DRAG AND DROP HANDLERS
   const handleDragStart = (tableId) => (event) => {
     event.dataTransfer.setData("text/plain", String(tableId));
     event.dataTransfer.effectAllowed = "move";
@@ -142,12 +185,27 @@ if (!user) {
   return (
     <div className="pos-shell">
       <header className="pos-header">
-        <div>
-          <h1>🎱 Snooker POS</h1>
-          <p>Drag a table from the sidebar into the main play area.</p>
-        </div>
-      </header>
+  <div>
+    <h1>🎱 Snooker POS</h1>
+    <p>Drag a table from the sidebar into the main play area.</p>
+  </div>
 
+  <div>
+    <span style={{ marginRight: "15px" }}>
+      Welcome, {user?.username}
+    </span>
+
+    <button
+      onClick={() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setUser(null);
+      }}
+    >
+      Logout
+    </button>
+  </div>
+</header>
       <div className="layout">
         <aside className="sidebar">
           <div className="section-header">
@@ -308,7 +366,7 @@ if (!user) {
       <div className="invoice-total">
         <span>Total</span>
         <span>Rs {invoice.amount}</span>
-      </div>
+    </div>
 
       <div className="invoice-actions">
         <button className="print-btn" onClick={() => window.print()}>
