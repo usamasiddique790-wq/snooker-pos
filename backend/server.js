@@ -80,6 +80,71 @@ app.post("/users/create", verifyToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// User deletion API - only admin can delete users and admin users cannot be deleted
+app.delete("/users/:id", verifyToken, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only admin can delete users" });
+    }
+
+    const userId = req.params.id;
+
+    await pool.query(
+      "DELETE FROM users WHERE id = $1 AND role != 'admin'",
+      [userId]
+    );
+
+    res.json({
+      message: "User deleted successfully",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+// User edit API - only admin can edit users and admin users cannot be edited
+app.put("/users/:id", verifyToken, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only admin can edit users" });
+    }
+
+    const { id } = req.params;
+    const { username, password, role } = req.body;
+
+    if (!["admin", "cashier", "staff"].includes(role)) {
+      return res.status(400).json({ error: "Invalid role" });
+    }
+
+    let result;
+
+    if (password && password.trim() !== "") {
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      result = await pool.query(
+        `UPDATE users
+         SET username = $1, password = $2, role = $3
+         WHERE id = $4
+         RETURNING id, username, role, created_at`,
+        [username, hashedPassword, role, id]
+      );
+    } else {
+      result = await pool.query(
+        `UPDATE users
+         SET username = $1, role = $2
+         WHERE id = $3
+         RETURNING id, username, role, created_at`,
+        [username, role, id]
+      );
+    }
+
+    res.json({
+      message: "User updated successfully",
+      user: result.rows[0],
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // Add snooker table
 app.post("/snooker-tables", async (req, res) => {
   try {

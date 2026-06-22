@@ -598,3 +598,71 @@
   color: white;
   cursor: pointer;
 }
+.admin-panel {
+  background: white;
+  color: #111;
+  padding: 20px;
+  border-radius: 14px;
+  margin: 20px 0;
+}
+
+.user-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.user-form input,
+.user-form select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.user-form button {
+  padding: 10px 16px;
+  border: none;
+  background: #111;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.users-table {
+  display: grid;
+  gap: 10px;
+}
+
+.user-row {
+  display: flex;
+  justify-content: space-between;
+  background: #f3f4f6;
+  padding: 12px;
+  border-radius: 8px;
+}
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.close-admin {
+  border: none;
+  background: #dc2626;
+  color: white;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.delete-user-btn {
+  border: none;
+  background: #ef4444;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}

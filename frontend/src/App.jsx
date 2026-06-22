@@ -15,17 +15,66 @@ function App() {
   const [stageTables, setStageTables] = useState([]);
   const [draggingTable, setDraggingTable] = useState(null);
   const [invoice, setInvoice] = useState(null);
-
+// user state for login and authentication
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
-
+// user state for cashier and staff creation
+  const [users, setUsers] = useState([]);
+const [showAdminPanel, setShowAdminPanel] = useState(false);
+const [newUser, setNewUser] = useState({
+  username: "",
+  password: "",
+  role: "cashier",
+});
+//login form state
   const [loginForm, setLoginForm] = useState({
     username: "",
     password: "",
   });
+  // edit user state
+  const [editingUser, setEditingUser] = useState(null);
+const [editUserForm, setEditUserForm] = useState({
+  username: "",
+  password: "",
+  role: "cashier",
+});
+// Start editing user - populate form with existing data  
+const startEditUser = (item) => {
+  setEditingUser(item);
 
+  setEditUserForm({
+    username: item.username,
+    password: "",
+    role: item.role,
+  });
+};
+
+const updateUser = async (e) => {
+  e.preventDefault();
+
+  try {
+    await axios.put(
+      `${API}/users/${editingUser.id}`,
+      editUserForm,
+      getAuthHeaders()
+    );
+
+    setEditingUser(null);
+    setEditUserForm({
+      username: "",
+      password: "",
+      role: "cashier",
+    });
+
+    fetchUsers();
+    alert("User updated successfully");
+  } catch (err) {
+    alert(err.response?.data?.error || "User update failed");
+  }
+};
+// Helper to get auth headers for API requests
   const getAuthHeaders = () => {
     return {
       headers: {
@@ -37,7 +86,35 @@ function App() {
     map[table.table_id] = table;
     return map;
   }, {});
+  // Fetch users for admin panel
+  const fetchUsers = async () => {
+  try {
+    const res = await axios.get(`${API}/users`, getAuthHeaders());
+    setUsers(res.data);
+  } catch (err) {
+    console.log("USERS ERROR:", err.response?.data || err.message);
+  }
+};
+// User listing API - only admin can view users
+const createUser = async (e) => {
+  e.preventDefault();
 
+  try {
+    await axios.post(`${API}/users/create`, newUser, getAuthHeaders());
+
+    setNewUser({
+      username: "",
+      password: "",
+      role: "cashier",
+    });
+
+    fetchUsers();
+    alert("User created successfully");
+  } catch (err) {
+    alert(err.response?.data?.error || "User create error");
+  }
+};
+// Fetch live table statuses
   const fetchTables = async () => {
     try {
       const res = await axios.get(`${API}/tables/live`, getAuthHeaders());
@@ -64,6 +141,21 @@ function App() {
     setUser(res.data.user);
   } catch (err) {
     alert(err.response?.data?.error || "Login failed");
+  }
+};
+// Delete user API
+const deleteUser = async (id) => {
+  if (!window.confirm("Delete this user?")) return;
+
+  try {
+    await axios.delete(
+      `${API}/users/${id}`,
+      getAuthHeaders()
+    );
+
+    fetchUsers();
+  } catch (err) {
+    alert(err.response?.data?.error || "Delete failed");
   }
 };
 //start game API
@@ -205,7 +297,133 @@ if (!user) {
       Logout
     </button>
   </div>
+  {user?.role === "admin" && (
+  <button
+    onClick={() => {
+      setShowAdminPanel(!showAdminPanel);
+      fetchUsers();
+    }}
+  >
+    Admin Panel
+  </button>
+)}
 </header>
+{showAdminPanel && user?.role === "admin" && (
+  <div className="admin-panel">
+    <div className="admin-header">
+  <h2>Admin Panel - Users</h2>
+
+  <button
+    className="close-admin"
+    onClick={() => setShowAdminPanel(false)}
+  >
+    ✕
+  </button>
+</div>
+
+    <form className="user-form" onSubmit={createUser}>
+      <input
+        type="text"
+        placeholder="Username"
+        value={newUser.username}
+        onChange={(e) =>
+          setNewUser({ ...newUser, username: e.target.value })
+        }
+        required
+      />
+
+      <input
+        type="password"
+        placeholder="Password"
+        value={newUser.password}
+        onChange={(e) =>
+          setNewUser({ ...newUser, password: e.target.value })
+        }
+        required
+      />
+
+      <select
+        value={newUser.role}
+        onChange={(e) =>
+          setNewUser({ ...newUser, role: e.target.value })
+        }
+      >
+        <option value="cashier">Cashier</option>
+        <option value="staff">Staff</option>
+        <option value="admin">Admin</option>
+      </select>
+
+      <button type="submit">Create User</button>
+    </form>
+{editingUser && (
+  <form className="user-form edit-form" onSubmit={updateUser}>
+    <input
+      type="text"
+      placeholder="Username"
+      value={editUserForm.username}
+      onChange={(e) =>
+        setEditUserForm({ ...editUserForm, username: e.target.value })
+      }
+      required
+    />
+
+    <input
+      type="password"
+      placeholder="New password (leave empty to keep old)"
+      value={editUserForm.password}
+      onChange={(e) =>
+        setEditUserForm({ ...editUserForm, password: e.target.value })
+      }
+    />
+
+    <select
+      value={editUserForm.role}
+      onChange={(e) =>
+        setEditUserForm({ ...editUserForm, role: e.target.value })
+      }
+    >
+      <option value="cashier">Cashier</option>
+      <option value="staff">Staff</option>
+      <option value="admin">Admin</option>
+    </select>
+
+    <button type="submit">Save Changes</button>
+
+    <button
+      type="button"
+      onClick={() => setEditingUser(null)}
+    >
+      Cancel
+    </button>
+  </form>
+)}
+    <div className="users-table">
+      {users.map((item) => (
+        <div className="user-row" key={item.id}>
+  <span>{item.username}</span>
+
+  <strong>{item.role}</strong>
+
+  <button
+    className="edit-user-btn"
+    onClick={() => startEditUser(item)}
+  >
+    Edit
+  </button>
+
+  {item.role !== "admin" && (
+    <button
+      className="delete-user-btn"
+      onClick={() => deleteUser(item.id)}
+    >
+      Delete
+    </button>
+  )}
+</div>
+      ))}
+    </div>
+  </div>
+)}
       <div className="layout">
         <aside className="sidebar">
           <div className="section-header">

@@ -109,3 +109,19 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* Custom styles for admin panel */
+.edit-user-btn {
+  border: none;
+  background: #2563eb;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.edit-form {
+  background: #eef2ff;
+  padding: 12px;
+  border-radius: 10px;
+}
