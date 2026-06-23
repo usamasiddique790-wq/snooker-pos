@@ -1,8 +1,42 @@
 const pool = require("../db");
 
+const getBillingRate = (table, billingType) => {
+  if (billingType === "one_ball") {
+    return table.one_ball_rate;
+  }
+
+  if (billingType === "six_ball") {
+    return table.six_ball_rate;
+  }
+
+  if (billingType === "ten_ball") {
+    return table.ten_ball_rate;
+  }
+
+  if (billingType === "full_frame") {
+    return table.full_frame_rate;
+  }
+
+  return table.hourly_rate;
+};
+
 const startSession = async (req, res) => {
   try {
-    const { table_id } = req.body;
+    const { table_id, billing_type = "century" } = req.body;
+
+    const allowedTypes = [
+      "century",
+      "one_ball",
+      "six_ball",
+      "ten_ball",
+      "full_frame",
+    ];
+
+    if (!allowedTypes.includes(billing_type)) {
+      return res.status(400).json({
+        error: "Invalid billing type",
+      });
+    }
 
     const runningCheck = await pool.query(
       "SELECT * FROM sessions WHERE table_id = $1 AND status = 'running'",
@@ -10,14 +44,31 @@ const startSession = async (req, res) => {
     );
 
     if (runningCheck.rows.length > 0) {
-      return res.status(400).json({ error: "This table already has a running session" });
+      return res.status(400).json({
+        error: "This table already has a running session",
+      });
     }
 
-    const sessionResult = await pool.query(
-      `INSERT INTO sessions (table_id, start_time)
-       VALUES ($1, NOW())
-       RETURNING *`,
+    const tableResult = await pool.query(
+      "SELECT * FROM snooker_tables WHERE id = $1",
       [table_id]
+    );
+
+    if (tableResult.rows.length === 0) {
+      return res.status(404).json({
+        error: "Table not found",
+      });
+    }
+
+    const table = tableResult.rows[0];
+    const billingRate = getBillingRate(table, billing_type);
+
+    const sessionResult = await pool.query(
+      `INSERT INTO sessions
+       (table_id, start_time, billing_type, billing_rate)
+       VALUES ($1, NOW(), $2, $3)
+       RETURNING *`,
+      [table_id, billing_type, billingRate]
     );
 
     await pool.query(
@@ -40,7 +91,10 @@ const endSession = async (req, res) => {
   try {
     const { session_id } = req.body;
 
-    const sessionResult = await pool.query("SELECT * FROM sessions WHERE id = $1", [session_id]);
+    const sessionResult = await pool.query(
+      "SELECT * FROM sessions WHERE id = $1",
+      [session_id]
+    );
 
     if (sessionResult.rows.length === 0) {
       return res.status(404).json({ error: "Session not found" });
@@ -48,14 +102,26 @@ const endSession = async (req, res) => {
 
     const session = sessionResult.rows[0];
 
-    const tableResult = await pool.query("SELECT * FROM snooker_tables WHERE id = $1", [session.table_id]);
+    const tableResult = await pool.query(
+      "SELECT * FROM snooker_tables WHERE id = $1",
+      [session.table_id]
+    );
+
     const table = tableResult.rows[0];
 
     const durationMinutes = Math.round(
       (new Date() - new Date(session.start_time)) / (1000 * 60)
     );
 
-    const gameAmount = (durationMinutes / 60) * parseFloat(table.hourly_rate);
+    let gameAmount = 0;
+
+    if (session.billing_type === "century") {
+      gameAmount =
+        (durationMinutes / 60) *
+        parseFloat(session.billing_rate || table.hourly_rate);
+    } else {
+      gameAmount = parseFloat(session.billing_rate || 0);
+    }
 
     const updatedSession = await pool.query(
       `UPDATE sessions
@@ -115,7 +181,11 @@ const getSessions = async (req, res) => {
       SELECT 
         sessions.*,
         snooker_tables.table_name,
-        snooker_tables.hourly_rate
+        snooker_tables.hourly_rate,
+        snooker_tables.one_ball_rate,
+        snooker_tables.six_ball_rate,
+        snooker_tables.ten_ball_rate,
+        snooker_tables.full_frame_rate
       FROM sessions
       JOIN snooker_tables ON sessions.table_id = snooker_tables.id
       ORDER BY sessions.id DESC
@@ -131,7 +201,10 @@ const getLiveSession = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const sessionResult = await pool.query("SELECT * FROM sessions WHERE id = $1", [id]);
+    const sessionResult = await pool.query(
+      "SELECT * FROM sessions WHERE id = $1",
+      [id]
+    );
 
     if (sessionResult.rows.length === 0) {
       return res.status(404).json({ error: "Session not found" });
@@ -139,20 +212,34 @@ const getLiveSession = async (req, res) => {
 
     const session = sessionResult.rows[0];
 
-    const tableResult = await pool.query("SELECT * FROM snooker_tables WHERE id = $1", [session.table_id]);
+    const tableResult = await pool.query(
+      "SELECT * FROM snooker_tables WHERE id = $1",
+      [session.table_id]
+    );
+
     const table = tableResult.rows[0];
 
     const minutes = Math.round(
       (new Date() - new Date(session.start_time)) / (1000 * 60)
     );
 
-    const amount = (minutes / 60) * parseFloat(table.hourly_rate);
+    let amount = 0;
+
+    if (session.billing_type === "century") {
+      amount =
+        (minutes / 60) *
+        parseFloat(session.billing_rate || table.hourly_rate);
+    } else {
+      amount = parseFloat(session.billing_rate || 0);
+    }
 
     res.json({
       table: table.table_name,
       duration_minutes: minutes,
       amount: amount.toFixed(2),
       status: session.status,
+      billing_type: session.billing_type,
+      billing_rate: session.billing_rate,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

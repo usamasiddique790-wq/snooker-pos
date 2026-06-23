@@ -1,7 +1,9 @@
 import Dashboard from "./Dashboard";
 import UsersManagement from "./UsersManagement";
 import ProductsManagement from "./ProductsManagement";
+import Credits from "./Credits";
 import Reports from "./Reports";
+import TablesManagement from "./TablesManagement";
 
 function AdminPanel({
   adminTab,
@@ -37,6 +39,16 @@ function AdminPanel({
   startEditProduct,
   deleteProduct,
   openInvoiceDetail,
+  tables,
+editingTable,
+setEditingTable,
+editTableForm,
+setEditTableForm,
+updateTableRates,
+credits,
+fetchCredits,
+addCreditPayment,
+deleteCredit
 }) {
   return (
     <div className="admin-panel">
@@ -58,7 +70,15 @@ function AdminPanel({
         >
           Users
         </button>
-
+      <button
+  className={adminTab === "credits" ? "active-tab" : ""}
+  onClick={() => {
+    setAdminTab("credits");
+    fetchCredits();
+  }}
+>
+  Udhar
+</button>
         <button
           className={adminTab === "products" ? "active-tab" : ""}
           onClick={() => {
@@ -84,6 +104,12 @@ function AdminPanel({
   onClick={() => setAdminTab("reports")}
 >
   Reports
+</button>
+<button
+  className={adminTab === "tables" ? "active-tab" : ""}
+  onClick={() => setAdminTab("tables")}
+>
+  Tables
 </button>
 
       </div>
@@ -129,6 +155,24 @@ function AdminPanel({
     salesReport={salesReport}
     fetchSalesReport={fetchSalesReport}
     openInvoiceDetail={openInvoiceDetail}
+  />
+)}
+{adminTab === "tables" && (
+  <TablesManagement
+    tables={tables}
+    editingTable={editingTable}
+    setEditingTable={setEditingTable}
+    editTableForm={editTableForm}
+    setEditTableForm={setEditTableForm}
+    updateTableRates={updateTableRates}
+  />
+)}
+{adminTab === "credits" && (
+  <Credits
+    credits={credits}
+    fetchCredits={fetchCredits}
+    addCreditPayment={addCreditPayment}
+    deleteCredit={deleteCredit}
   />
 )}
     </div>

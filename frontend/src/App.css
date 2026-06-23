@@ -988,3 +988,781 @@ body {
 .summary-row .dashboard-card p {
   color: #64748b;
 }
+
+/* EXACT IMAGE STYLE TABLE GRID */
+
+.image-style-section {
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
+}
+
+.section-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.section-title-row h2 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.section-title-row p {
+  margin: 5px 0 0;
+  color: #64748b;
+}
+
+.stage-grid {
+  display: grid !important;
+  grid-template-columns: repeat(6, 1fr) !important;
+  gap: 18px !important;
+}
+
+.snooker-table-card {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.snooker-table-image {
+  height: 135px;
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.45)),
+    radial-gradient(circle at center, #22c55e 0%, #166534 34%, #020617 75%);
+}
+
+.snooker-table-image::after {
+  content: "🎱";
+  position: absolute;
+  font-size: 64px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 8px 12px rgba(0,0,0,0.45));
+}
+
+.table-status-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  color: white;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.table-status-badge.available {
+  background: #16a34a;
+}
+
+.table-status-badge.session {
+  background: #f97316;
+}
+
+.table-circle {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: white;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.25);
+}
+
+.snooker-table-info {
+  padding: 14px;
+}
+
+.snooker-table-info h3 {
+  margin: 0 0 10px;
+  font-size: 17px;
+}
+
+.snooker-table-info p {
+  margin: 7px 0;
+  font-size: 13px;
+  color: #475569;
+}
+
+.snooker-table-info strong {
+  color: #16a34a;
+}
+
+.status-text.available {
+  color: #15803d;
+  font-weight: 800;
+}
+
+.status-text.session {
+  color: #f97316;
+  font-weight: 800;
+}
+
+.start-table-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px;
+  border: none;
+  border-radius: 10px;
+  background: #dcfce7;
+  color: #15803d;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.compact-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.compact-actions button {
+  border: none;
+  border-radius: 10px;
+  padding: 9px;
+  background: #dbeafe;
+  color: #2563eb;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.compact-actions .danger {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* PRODUCTS EXACT COMPACT LOOK */
+
+.compact-products-section .modern-product-grid {
+  display: grid !important;
+  grid-template-columns: repeat(5, 1fr) !important;
+  gap: 16px;
+}
+
+.compact-products-section .modern-product-card {
+  grid-template-columns: 90px 1fr;
+  display: grid;
+  align-items: center;
+  min-height: 95px;
+  padding: 12px;
+}
+
+.compact-products-section .product-emoji {
+  height: 75px;
+  font-size: 45px;
+}
+
+.compact-products-section .product-info h3 {
+  font-size: 15px;
+}
+
+.compact-products-section .product-info p,
+.compact-products-section .product-info strong {
+  font-size: 13px;
+}
+
+/* SUMMARY CARDS */
+
+.summary-row {
+  margin-bottom: 24px;
+}
+
+.summary-row .dashboard-card {
+  background: white;
+  color: #0f172a;
+  border-radius: 20px;
+}
+
+.summary-row .dashboard-card p {
+  color: #64748b;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1500px) {
+  .stage-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .stage-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .compact-products-section .modern-product-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .stage-grid,
+  .compact-products-section .modern-product-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+/* FIX PRODUCTS OVERFLOW */
+
+.compact-products-section {
+  overflow: hidden;
+}
+
+.compact-products-section .modern-product-grid {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  width: 100%;
+}
+
+.compact-products-section .modern-product-card {
+  min-width: 0;
+  width: 100%;
+  display: grid !important;
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  min-height: 92px;
+  overflow: hidden;
+}
+
+.compact-products-section .product-emoji {
+  width: 70px;
+  height: 70px;
+  font-size: 38px;
+  flex-shrink: 0;
+}
+
+.compact-products-section .product-info {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.compact-products-section .product-info h3,
+.compact-products-section .product-info p,
+.compact-products-section .product-info strong {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compact-products-section .product-info h3 {
+  font-size: 14px;
+}
+
+.compact-products-section .product-info p {
+  font-size: 12px;
+}
+
+.compact-products-section .product-info strong {
+  font-size: 13px;
+}
+
+/* responsive products */
+@media (max-width: 1400px) {
+  .compact-products-section .modern-product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .compact-products-section .modern-product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .compact-products-section .modern-product-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+/* EXACT SNOOKER TABLE VISUAL */
+
+.stage-grid {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+}
+
+.snooker-table-card {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.snooker-visual {
+  height: 138px;
+  position: relative;
+  background: radial-gradient(circle at center, #3b210d 0%, #170b05 60%, #050505 100%);
+  overflow: hidden;
+}
+
+.real-snooker-table {
+  width: 78%;
+  height: 58%;
+  position: absolute;
+  left: 50%;
+  top: 53%;
+  transform: translate(-50%, -50%) perspective(500px) rotateX(58deg) rotateZ(-4deg);
+  background: linear-gradient(135deg, #17b63d, #0b7f25);
+  border: 10px solid #3a210d;
+  border-radius: 14px;
+  box-shadow:
+    0 12px 0 #1b0d05,
+    0 26px 32px rgba(0,0,0,0.65),
+    inset 0 0 0 3px #d6a23a;
+}
+
+.real-snooker-table::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 2px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+}
+
+.real-snooker-table::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255,255,255,0.25);
+}
+
+.pocket {
+  width: 13px;
+  height: 13px;
+  background: #020202;
+  border-radius: 50%;
+  position: absolute;
+  z-index: 4;
+  box-shadow: inset 0 0 3px #000;
+}
+
+.p1 { left: -8px; top: -8px; }
+.p2 { right: -8px; top: -8px; }
+.p3 { left: -8px; bottom: -8px; }
+.p4 { right: -8px; bottom: -8px; }
+.p5 { left: 50%; top: -8px; transform: translateX(-50%); }
+.p6 { left: 50%; bottom: -8px; transform: translateX(-50%); }
+
+.ball {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  position: absolute;
+  z-index: 5;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.45);
+}
+
+.white { background: white; left: 24%; top: 54%; }
+.red { background: #dc2626; }
+.b1 { left: 56%; top: 42%; }
+.b2 { left: 61%; top: 50%; }
+.b3 { left: 67%; top: 45%; }
+.yellow { background: #facc15; left: 30%; top: 35%; }
+.blue { background: #2563eb; left: 50%; top: 50%; }
+.black { background: #020617; left: 75%; top: 50%; }
+
+.table-status-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+  color: white;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.table-status-badge.available {
+  background: #16a34a;
+}
+
+.table-status-badge.session {
+  background: #f97316;
+}
+
+.table-circle {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 10;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: white;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.25);
+}
+
+.snooker-table-info {
+  padding: 14px;
+}
+
+.snooker-table-info h3 {
+  margin: 0 0 10px;
+  font-size: 17px;
+}
+
+.snooker-table-info p {
+  margin: 7px 0;
+  font-size: 13px;
+  color: #475569;
+}
+
+.snooker-table-info strong {
+  color: #16a34a;
+}
+
+.status-text.available {
+  color: #15803d;
+  font-weight: 800;
+}
+
+.status-text.session {
+  color: #f97316;
+  font-weight: 800;
+}
+
+.start-table-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px;
+  border: none;
+  border-radius: 10px;
+  background: #dcfce7;
+  color: #15803d;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.compact-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.compact-actions button {
+  border: none;
+  border-radius: 10px;
+  padding: 9px;
+  background: #dbeafe;
+  color: #2563eb;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.compact-actions .danger {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+@media (max-width: 1500px) {
+  .stage-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .stage-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .stage-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+.start-game-box {
+  width: 430px;
+}
+
+.billing-options {
+  display: grid;
+  gap: 10px;
+}
+
+.billing-options button {
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  padding: 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.billing-options button:hover {
+  background: #dcfce7;
+  border-color: #22c55e;
+}
+
+.billing-options strong {
+  font-size: 16px;
+}
+
+.billing-options span {
+  color: #64748b;
+}
+
+/* ADMIN PANEL OVERFLOW FIX */
+
+.admin-panel {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.admin-tabs {
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.admin-tabs button {
+  white-space: nowrap;
+}
+
+.tables-admin-panel,
+.products-panel,
+.modern-products-panel {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.product-form-modern {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+  width: 100%;
+}
+
+.product-form-modern input,
+.product-form-modern button {
+  min-width: 0;
+  width: 100%;
+}
+
+.report-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.report-row {
+  grid-template-columns: 1.2fr repeat(5, 1fr) 90px !important;
+  min-width: 760px;
+}
+
+.modern-product-grid {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+  width: 100%;
+}
+
+.modern-product-card {
+  min-width: 0;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .report-row {
+    grid-template-columns: 1fr !important;
+    min-width: 0;
+  }
+
+  .product-form-modern {
+    grid-template-columns: 1fr !important;
+  }
+}
+.credit-box {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed #aaa;
+  display: grid;
+  gap: 8px;
+}
+
+.credit-box h3 {
+  margin: 0;
+  text-align: center;
+}
+
+.credit-save-btn {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #dc2626;
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .reports-panel,
+  .reports-panel * {
+    visibility: visible;
+  }
+
+  .reports-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white;
+    color: black;
+  }
+
+  .report-form,
+  .admin-tabs,
+  .admin-header,
+  .edit-user-btn,
+  .close-admin {
+    display: none !important;
+  }
+
+  .dashboard-card {
+    background: white !important;
+    color: black !important;
+    border: 1px solid #ddd;
+    box-shadow: none;
+  }
+
+  .report-row {
+    background: white !important;
+    color: black !important;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .report-head {
+    background: #111 !important;
+    color: white !important;
+  }
+}
+.sales-bill {
+  max-width: 380px;
+  background: white;
+  color: #111;
+  padding: 22px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  margin-bottom: 24px;
+  font-family: Arial, sans-serif;
+}
+
+.sales-print-btn {
+  width: 100%;
+  margin-top: 15px;
+  padding: 11px;
+  border-radius: 8px;
+}
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .print-only,
+  .print-only * {
+    visibility: visible;
+  }
+
+  .print-only {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 320px;
+    padding: 20px;
+    background: white;
+    color: black;
+    font-family: Arial, sans-serif;
+  }
+
+  .sales-print-btn {
+    display: none !important;
+  }
+
+  .report-table,
+  .dashboard-grid,
+  .report-form,
+  .admin-tabs,
+  .admin-header {
+    display: none !important;
+  }
+}
+
+.sales-print-main-btn {
+  margin-bottom: 16px;
+  padding: 11px 16px;
+  border-radius: 8px;
+}
+
+@media print {
+  .sales-print-main-btn {
+    display: none !important;
+  }
+}
+.print-only {
+  display: none;
+}
+
+.sales-print-main-btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .print-only,
+  .print-only * {
+    visibility: visible;
+  }
+
+  .print-only {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 320px;
+    padding: 20px;
+    background: white;
+    color: black;
+    font-family: Arial, sans-serif;
+  }
+
+  .sales-print-main-btn {
+    display: none !important;
+  }
+}

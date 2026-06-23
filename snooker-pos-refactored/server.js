@@ -8,6 +8,7 @@ const userRoutes = require("./routes/user.routes");
 const tableRoutes = require("./routes/table.routes");
 const sessionRoutes = require("./routes/session.routes");
 const productRoutes = require("./routes/product.routes");
+const creditRoutes = require("./routes/credit.routes");
 const reportRoutes = require("./routes/report.routes");
 
 const app = express();
@@ -26,6 +27,7 @@ app.use("/reports", reportRoutes);
 app.use(sessionRoutes);
 app.use(productRoutes);
 app.use("/dashboard", dashboardRoutes);
+app.use("/credits", creditRoutes);
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });

@@ -3,13 +3,22 @@ import AdminPanel from "./components/AdminPanel";
 import { useEffect, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
+
 import "./App.css";
 import { loginApi } from "./api/authApi";
+import StartGamePopup from "./components/StartGamePopup";
+import { getLiveTablesApi, updateTableApi } from "./api/tablesApi";
 
 import {
   getSalesReportApi,
   getInvoiceDetailApi,
 } from "./api/reportApi";
+import {
+  addCreditApi,
+  getCreditsApi,
+  addCreditPaymentApi,
+  deleteCreditApi,
+} from "./api/creditApi";
 import {
   getUsersApi,
   createUserApi,
@@ -22,7 +31,7 @@ import {
   updateProductApi,
   deleteProductApi,
 } from "./api/productsApi";
-import { getLiveTablesApi } from "./api/tablesApi";
+
 import {
   startSessionApi,
   endSessionApi,
@@ -44,12 +53,42 @@ function App() {
   const [tables, setTables] = useState([]);
   const [stageTables, setStageTables] = useState([]);
   const [draggingTable, setDraggingTable] = useState(null);
+  const [selectedStartTable, setSelectedStartTable] = useState(null);
   const [invoice, setInvoice] = useState(null);
-
+  const [credits, setCredits] = useState([]);
+  const [activePage, setActivePage] = useState("tables");
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
+
+  const [newTable, setNewTable] = useState({
+  table_name: "",
+  hourly_rate: 300,
+  one_ball_rate: 50,
+  six_ball_rate: 100,
+  ten_ball_rate: 150,
+  full_frame_rate: 200,
+});
+const [editingTable, setEditingTable] = useState(null);
+
+const [editTableForm, setEditTableForm] = useState({
+  table_name: "",
+  hourly_rate: 300,
+  one_ball_rate: 50,
+  six_ball_rate: 100,
+  ten_ball_rate: 150,
+  full_frame_rate: 200,
+});
+  const [tick, setTick] = useState(0);
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    setTick((v) => v + 1);
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, []);
   const [dashboard, setDashboard] = useState(null);
   const [loginForm, setLoginForm] = useState({
     username: "",
@@ -111,6 +150,68 @@ const [reportFilters, setReportFilters] = useState({
     (table) => !stageTables.includes(table.table_id)
   );
 
+  const openAdminPanel = (tab) => {
+  setShowAdminPanel(true);
+  setAdminTab(tab);
+
+  fetchUsers();
+  fetchProducts();
+  fetchDashboard();
+};
+
+const saveCredit = async (data) => {
+  try {
+    await addCreditApi(data);
+    await fetchCredits();
+
+    if (reportFilters.start && reportFilters.end) {
+      const res = await getSalesReportApi(
+        reportFilters.start,
+        reportFilters.end
+      );
+
+      setSalesReport(res.data);
+    }
+
+    alert("Udhar saved successfully");
+  } catch (err) {
+    alert(err.response?.data?.error || "Udhar save failed");
+  }
+};
+const addCreditPayment = async (creditId, amount) => {
+  try {
+    await addCreditPaymentApi({
+      credit_id: creditId,
+      amount: Number(amount),
+      notes: "Partial payment",
+    });
+
+    await fetchCredits();
+    alert("Payment updated successfully");
+  } catch (err) {
+    alert(err.response?.data?.error || "Payment failed");
+  }
+};
+
+const deleteCredit = async (creditId) => {
+  if (!window.confirm("Complete udhar delete karna hai?")) return;
+
+  try {
+    await deleteCreditApi(creditId);
+    await fetchCredits();
+    alert("Credit deleted successfully");
+  } catch (err) {
+    alert(err.response?.data?.error || "Delete failed");
+  }
+};
+const fetchCredits = async () => {
+  try {
+    const res = await getCreditsApi();
+    setCredits(res.data);
+  } catch (err) {
+    alert(err.response?.data?.error || "Credits fetch failed");
+  }
+};
   const fetchTables = async () => {
     try {
       const res = await getLiveTablesApi();
@@ -162,6 +263,21 @@ const [reportFilters, setReportFilters] = useState({
       alert(err.response?.data?.error || "Login failed");
     }
   };
+  const updateTableRates = async (e) => {
+  e.preventDefault();
+
+  try {
+    await updateTableApi(editingTable.table_id || editingTable.id, editTableForm);
+
+    setEditingTable(null);
+
+    await fetchTables();
+
+    alert("Table rates updated successfully");
+  } catch (err) {
+    alert(err.response?.data?.error || "Table update failed");
+  }
+};
   const openInvoiceDetail = async (id) => {
   try {
     const res = await getInvoiceDetailApi(id);
@@ -313,15 +429,15 @@ const fetchSalesReport = async (e) => {
     }
   };
 
-  const startGame = async (tableId) => {
-    try {
-      await startSessionApi(tableId);
-      await fetchTables();
-    } catch (err) {
-      alert(err.response?.data?.error || err.message || "Start game error");
-    }
-  };
-
+  const startGame = async (tableId, billingType = "century") => {
+  try {
+    await startSessionApi(tableId, billingType);
+    setSelectedStartTable(null);
+    await fetchTables();
+  } catch (err) {
+    alert(err.response?.data?.error || err.message || "Start game error");
+  }
+};
   const endGame = async (sessionId) => {
     try {
       if (!sessionId) {
@@ -426,7 +542,13 @@ const fetchSalesReport = async (e) => {
 
   return (
   <div className="modern-shell">
-    <Sidebar user={user} onLogout={logout} />
+    <Sidebar
+  user={user}
+  onLogout={logout}
+  activePage={activePage}
+  setActivePage={setActivePage}
+  openAdminPanel={openAdminPanel}
+/>
 
     <main className="modern-main">
       <Topbar
@@ -474,6 +596,16 @@ const fetchSalesReport = async (e) => {
           salesReport={salesReport}
           fetchSalesReport={fetchSalesReport}
           openInvoiceDetail={openInvoiceDetail}
+          tables={tables}
+          editingTable={editingTable}
+          setEditingTable={setEditingTable}
+          editTableForm={editTableForm}
+          setEditTableForm={setEditTableForm}
+          updateTableRates={updateTableRates}
+          credits={credits}
+          fetchCredits={fetchCredits}
+          addCreditPayment={addCreditPayment}
+deleteCredit={deleteCredit}
         />
       )}
 
@@ -486,7 +618,7 @@ const fetchSalesReport = async (e) => {
         </div>
 
         <div className="stage-grid">
-          {allTables.slice(0, 4).map((table) => {
+          {allTables.map((table) => {
             const status = tableStatusMap[table.table_id];
             const isRunning = status?.table_status?.trim() === "running";
 
@@ -498,7 +630,10 @@ const fetchSalesReport = async (e) => {
                 status={status}
                 isRunning={isRunning}
                 onReturn={() => {}}
-                onStart={startGame}
+                onStart={(tableId) => {
+  const selected = allTables.find((t) => t.table_id === tableId);
+  setSelectedStartTable(selected);
+}}
                 onEnd={endGame}
                 onAddProduct={(status) => {
                   setOrderTable(status);
@@ -582,7 +717,11 @@ const fetchSalesReport = async (e) => {
         </div>
       </section>
 
-      <InvoicePopup invoice={invoice} onClose={() => setInvoice(null)} />
+      <InvoicePopup
+  invoice={invoice}
+  onClose={() => setInvoice(null)}
+  onSaveCredit={saveCredit}
+/>
 
       <AddProductPopup
         orderTable={orderTable}
@@ -595,6 +734,11 @@ const fetchSalesReport = async (e) => {
           setOrderForm({ product_id: "", quantity: 1 });
         }}
       />
+      <StartGamePopup
+  selectedTable={selectedStartTable}
+  onStart={startGame}
+  onClose={() => setSelectedStartTable(null)}
+/>
     </main>
   </div>
 );

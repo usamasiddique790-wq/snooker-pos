@@ -1,5 +1,33 @@
-function InvoicePopup({ invoice, onClose }) {
+import { useState } from "react";
+
+function InvoicePopup({ invoice, onClose, onSaveCredit }) {
+  const [creditForm, setCreditForm] = useState({
+    customer_name: "",
+    amount: "",
+  });
+
   if (!invoice) return null;
+
+  const invoiceNo = `SNK-${String(invoice.session.id).padStart(5, "0")}`;
+
+  const saveCredit = async () => {
+    if (!creditForm.customer_name || !creditForm.amount) {
+      alert("Customer name aur udhar amount required hai");
+      return;
+    }
+
+    await onSaveCredit({
+      customer_name: creditForm.customer_name,
+      amount: Number(creditForm.amount),
+      invoice_id: invoice.session.id,
+      notes: `Udhar from ${invoiceNo}`,
+    });
+
+    setCreditForm({
+      customer_name: "",
+      amount: "",
+    });
+  };
 
   return (
     <div className="invoice-overlay">
@@ -11,7 +39,7 @@ function InvoicePopup({ invoice, onClose }) {
 
         <div className="invoice-row">
           <span>Invoice No</span>
-          <strong>#{invoice.session.id}</strong>
+          <strong>{invoiceNo}</strong>
         </div>
 
         <div className="invoice-row">
@@ -20,8 +48,13 @@ function InvoicePopup({ invoice, onClose }) {
         </div>
 
         <div className="invoice-row">
+          <span>Game Type</span>
+          <strong>{invoice.session.billing_type || "century"}</strong>
+        </div>
+
+        <div className="invoice-row">
           <span>Duration</span>
-          <strong>{invoice.session.duration_minutes} min</strong>
+          <strong>{invoice.session.duration_minutes ?? 0} min</strong>
         </div>
 
         <div className="invoice-row">
@@ -53,6 +86,38 @@ function InvoicePopup({ invoice, onClose }) {
         <div className="invoice-total">
           <span>Grand Total</span>
           <span>Rs {invoice.grand_total}</span>
+        </div>
+
+        <div className="credit-box">
+          <h3>Udhar / Credit</h3>
+
+          <input
+            type="text"
+            placeholder="Customer Name"
+            value={creditForm.customer_name}
+            onChange={(e) =>
+              setCreditForm({
+                ...creditForm,
+                customer_name: e.target.value,
+              })
+            }
+          />
+
+          <input
+            type="number"
+            placeholder="Udhar Amount"
+            value={creditForm.amount}
+            onChange={(e) =>
+              setCreditForm({
+                ...creditForm,
+                amount: e.target.value,
+              })
+            }
+          />
+
+          <button type="button" className="credit-save-btn" onClick={saveCredit}>
+            Save Udhar
+          </button>
         </div>
 
         <div className="invoice-actions">

@@ -32,6 +32,16 @@ const getSalesReport = async (req, res) => {
       [start, end]
     );
 
+    const creditResult = await pool.query(
+      `
+      SELECT COALESCE(SUM(amount), 0) AS total_credit
+      FROM credit_transactions
+      WHERE transaction_type = 'credit'
+      AND DATE(created_at) BETWEEN $1 AND $2
+      `,
+      [start, end]
+    );
+
     const invoicesResult = await pool.query(
       `
       SELECT
@@ -41,8 +51,8 @@ const getSalesReport = async (req, res) => {
         s.end_time,
         s.duration_minutes,
         COALESCE(s.amount, 0) AS game_amount,
-COALESCE(SUM(sp.total), 0) AS products_amount,
-(COALESCE(s.amount, 0) + COALESCE(SUM(sp.total), 0)) AS grand_total
+        COALESCE(SUM(sp.total), 0) AS products_amount,
+        (COALESCE(s.amount, 0) + COALESCE(SUM(sp.total), 0)) AS grand_total
       FROM sessions s
       LEFT JOIN session_products sp ON sp.session_id = s.id
       WHERE s.status = 'completed'
@@ -55,6 +65,7 @@ COALESCE(SUM(sp.total), 0) AS products_amount,
 
     const gameRevenue = Number(summaryResult.rows[0].game_revenue);
     const productsRevenue = Number(productsResult.rows[0].products_revenue);
+    const totalCredit = Number(creditResult.rows[0].total_credit);
 
     res.json({
       start,
@@ -62,6 +73,10 @@ COALESCE(SUM(sp.total), 0) AS products_amount,
       gameRevenue,
       productsRevenue,
       totalRevenue: gameRevenue + productsRevenue,
+
+      // frontend isi naam se read kar raha hai
+      totalCredit,
+
       completedSessions: Number(summaryResult.rows[0].completed_sessions),
       invoices: invoicesResult.rows,
     });
