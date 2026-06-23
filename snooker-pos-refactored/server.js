@@ -2,7 +2,7 @@ const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const express = require("express");
 const cors = require("cors");
-
+const dashboardRoutes = require("./routes/dashboard.routes");
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
 const tableRoutes = require("./routes/table.routes");
@@ -24,7 +24,7 @@ app.use(userRoutes);
 app.use(tableRoutes);
 app.use(sessionRoutes);
 app.use(productRoutes);
-
+app.use("/dashboard", dashboardRoutes);
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });

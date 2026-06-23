@@ -1,6 +1,7 @@
+import { getTodayDashboardApi } from "./api/dashboardApi";
+import AdminPanel from "./components/AdminPanel";
 import { useEffect, useState } from "react";
 import "./App.css";
-
 import { loginApi } from "./api/authApi";
 import {
   getUsersApi,
@@ -42,7 +43,7 @@ function App() {
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
-
+  const [dashboard, setDashboard] = useState(null);
   const [loginForm, setLoginForm] = useState({
     username: "",
     password: "",
@@ -149,7 +150,14 @@ function App() {
       alert(err.response?.data?.error || "Login failed");
     }
   };
-
+const fetchDashboard = async () => {
+  try {
+    const res = await getTodayDashboardApi();
+    setDashboard(res.data);
+  } catch (err) {
+    console.log("DASHBOARD ERROR:", err.response?.data || err.message);
+  }
+};
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -292,6 +300,7 @@ function App() {
 
       setInvoice(res.data);
       await fetchTables();
+      await fetchDashboard();
     } catch (err) {
       alert(err.response?.data?.error || err.message || "End game error");
     }
@@ -313,6 +322,7 @@ function App() {
 
       await fetchTables();
       await fetchProducts();
+      await fetchDashboard(); 
     } catch (err) {
       alert(err.response?.data?.error || "Product add failed");
     }
@@ -411,307 +421,36 @@ function App() {
       </header>
 
       {showAdminPanel && user?.role === "admin" && (
-        <div className="admin-panel">
-          <div className="admin-header">
-            <h2>Admin Panel</h2>
-
-            <button
-              className="close-admin"
-              onClick={() => setShowAdminPanel(false)}
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="admin-tabs">
-            <button
-              className={adminTab === "users" ? "active-tab" : ""}
-              onClick={() => setAdminTab("users")}
-            >
-              Users
-            </button>
-
-            <button
-              className={adminTab === "products" ? "active-tab" : ""}
-              onClick={() => {
-                setAdminTab("products");
-                fetchProducts();
-              }}
-            >
-              Products
-            </button>
-          </div>
-
-          {adminTab === "users" && (
-            <>
-              <form className="user-form" onSubmit={createUser}>
-                <input
-                  type="text"
-                  placeholder="Username"
-                  value={newUser.username}
-                  onChange={(e) =>
-                    setNewUser({ ...newUser, username: e.target.value })
-                  }
-                  required
-                />
-
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={newUser.password}
-                  onChange={(e) =>
-                    setNewUser({ ...newUser, password: e.target.value })
-                  }
-                  required
-                />
-
-                <select
-                  value={newUser.role}
-                  onChange={(e) =>
-                    setNewUser({ ...newUser, role: e.target.value })
-                  }
-                >
-                  <option value="cashier">Cashier</option>
-                  <option value="staff">Staff</option>
-                  <option value="admin">Admin</option>
-                </select>
-
-                <button type="submit">Create User</button>
-              </form>
-
-              {editingUser && (
-                <form className="user-form edit-form" onSubmit={updateUser}>
-                  <input
-                    type="text"
-                    placeholder="Username"
-                    value={editUserForm.username}
-                    onChange={(e) =>
-                      setEditUserForm({
-                        ...editUserForm,
-                        username: e.target.value,
-                      })
-                    }
-                    required
-                  />
-
-                  <input
-                    type="password"
-                    placeholder="New password"
-                    value={editUserForm.password}
-                    onChange={(e) =>
-                      setEditUserForm({
-                        ...editUserForm,
-                        password: e.target.value,
-                      })
-                    }
-                  />
-
-                  <select
-                    value={editUserForm.role}
-                    onChange={(e) =>
-                      setEditUserForm({
-                        ...editUserForm,
-                        role: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="cashier">Cashier</option>
-                    <option value="staff">Staff</option>
-                    <option value="admin">Admin</option>
-                  </select>
-
-                  <button type="submit">Save Changes</button>
-
-                  <button type="button" onClick={() => setEditingUser(null)}>
-                    Cancel
-                  </button>
-                </form>
-              )}
-
-              <div className="users-table">
-                {users.map((item) => (
-                  <div className="user-row" key={item.id}>
-                    <span>{item.username}</span>
-                    <strong>{item.role}</strong>
-
-                    <button
-                      className="edit-user-btn"
-                      onClick={() => startEditUser(item)}
-                    >
-                      Edit
-                    </button>
-
-                    {item.role !== "admin" && (
-                      <button
-                        className="delete-user-btn"
-                        onClick={() => deleteUser(item.id)}
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {adminTab === "products" && (
-            <div className="products-panel">
-              <form className="user-form" onSubmit={createProduct}>
-                <input
-                  type="text"
-                  placeholder="Product Name"
-                  value={newProduct.name}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, name: e.target.value })
-                  }
-                  required
-                />
-
-                <input
-                  type="text"
-                  placeholder="Barcode"
-                  value={newProduct.barcode}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, barcode: e.target.value })
-                  }
-                />
-
-                <input
-                  type="number"
-                  placeholder="Price"
-                  value={newProduct.price}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, price: e.target.value })
-                  }
-                  required
-                />
-
-                <input
-                  type="number"
-                  placeholder="Stock"
-                  value={newProduct.stock}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, stock: e.target.value })
-                  }
-                  required
-                />
-
-                <input
-                  type="text"
-                  placeholder="Category"
-                  value={newProduct.category}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, category: e.target.value })
-                  }
-                />
-
-                <button type="submit">Add Product</button>
-              </form>
-
-              {editingProduct && (
-                <form className="user-form edit-form" onSubmit={updateProduct}>
-                  <input
-                    type="text"
-                    placeholder="Product Name"
-                    value={editProductForm.name}
-                    onChange={(e) =>
-                      setEditProductForm({
-                        ...editProductForm,
-                        name: e.target.value,
-                      })
-                    }
-                    required
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Barcode"
-                    value={editProductForm.barcode}
-                    onChange={(e) =>
-                      setEditProductForm({
-                        ...editProductForm,
-                        barcode: e.target.value,
-                      })
-                    }
-                  />
-
-                  <input
-                    type="number"
-                    placeholder="Price"
-                    value={editProductForm.price}
-                    onChange={(e) =>
-                      setEditProductForm({
-                        ...editProductForm,
-                        price: e.target.value,
-                      })
-                    }
-                    required
-                  />
-
-                  <input
-                    type="number"
-                    placeholder="Stock"
-                    value={editProductForm.stock}
-                    onChange={(e) =>
-                      setEditProductForm({
-                        ...editProductForm,
-                        stock: e.target.value,
-                      })
-                    }
-                    required
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Category"
-                    value={editProductForm.category}
-                    onChange={(e) =>
-                      setEditProductForm({
-                        ...editProductForm,
-                        category: e.target.value,
-                      })
-                    }
-                  />
-
-                  <button type="submit">Save Product</button>
-
-                  <button
-                    type="button"
-                    onClick={() => setEditingProduct(null)}
-                  >
-                    Cancel
-                  </button>
-                </form>
-              )}
-
-              <div className="products-table">
-                {products.map((product) => (
-                  <div className="product-row" key={product.id}>
-                    <span>{product.name}</span>
-                    <span>Rs {product.price}</span>
-                    <span>Stock: {product.stock}</span>
-                    <span>{product.category || "No Category"}</span>
-
-                    <button
-                      className="edit-user-btn"
-                      onClick={() => startEditProduct(product)}
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      className="delete-user-btn"
-                      onClick={() => deleteProduct(product.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        <AdminPanel
+          adminTab={adminTab}
+          setAdminTab={setAdminTab}
+          setShowAdminPanel={setShowAdminPanel}
+          fetchProducts={fetchProducts}
+          users={users}
+          newUser={newUser}
+          setNewUser={setNewUser}
+          createUser={createUser}
+          editingUser={editingUser}
+          editUserForm={editUserForm}
+          setEditUserForm={setEditUserForm}
+          updateUser={updateUser}
+          setEditingUser={setEditingUser}
+          startEditUser={startEditUser}
+          deleteUser={deleteUser}
+          products={products}
+          newProduct={newProduct}
+          setNewProduct={setNewProduct}
+          createProduct={createProduct}
+          editingProduct={editingProduct}
+          editProductForm={editProductForm}
+          setEditProductForm={setEditProductForm}
+          updateProduct={updateProduct}
+          setEditingProduct={setEditingProduct}
+          startEditProduct={startEditProduct}
+          deleteProduct={deleteProduct}
+          dashboard={dashboard}
+          fetchDashboard={fetchDashboard}
+        />
       )}
 
       <div className="layout">

@@ -707,3 +707,52 @@
   border: 1px solid #ccc;
   border-radius: 8px;
 }
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .invoice-box,
+  .invoice-box * {
+    visibility: visible;
+  }
+
+  .invoice-box {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 300px;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .invoice-overlay {
+    position: static;
+    background: white;
+  }
+
+  .invoice-actions {
+    display: none;
+  }
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.dashboard-card {
+  background: #1f2937;
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.dashboard-card h2 {
+  margin-top: 10px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
