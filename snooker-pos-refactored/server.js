@@ -8,7 +8,7 @@ const userRoutes = require("./routes/user.routes");
 const tableRoutes = require("./routes/table.routes");
 const sessionRoutes = require("./routes/session.routes");
 const productRoutes = require("./routes/product.routes");
-
+const reportRoutes = require("./routes/report.routes");
 
 const app = express();
 
@@ -22,6 +22,7 @@ app.get("/", (req, res) => {
 app.use(authRoutes);
 app.use(userRoutes);
 app.use(tableRoutes);
+app.use("/reports", reportRoutes);
 app.use(sessionRoutes);
 app.use(productRoutes);
 app.use("/dashboard", dashboardRoutes);

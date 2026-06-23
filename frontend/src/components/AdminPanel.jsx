@@ -1,7 +1,7 @@
 import Dashboard from "./Dashboard";
 import UsersManagement from "./UsersManagement";
 import ProductsManagement from "./ProductsManagement";
-
+import Reports from "./Reports";
 
 function AdminPanel({
   adminTab,
@@ -21,7 +21,10 @@ function AdminPanel({
   setEditingUser,
   startEditUser,
   deleteUser,
-
+  reportFilters,
+  setReportFilters,
+  salesReport,
+  fetchSalesReport,
   products,
   newProduct,
   setNewProduct,
@@ -75,6 +78,12 @@ function AdminPanel({
 >
   Dashboard
 </button>
+<button
+  className={adminTab === "reports" ? "active-tab" : ""}
+  onClick={() => setAdminTab("reports")}
+>
+  Reports
+</button>
       </div>
 
       {adminTab === "users" && (
@@ -110,6 +119,14 @@ function AdminPanel({
       )}
       {adminTab === "dashboard" && (
   <Dashboard dashboard={dashboard} />
+)}
+{adminTab === "reports" && (
+  <Reports
+    reportFilters={reportFilters}
+    setReportFilters={setReportFilters}
+    salesReport={salesReport}
+    fetchSalesReport={fetchSalesReport}
+  />
 )}
     </div>
   );

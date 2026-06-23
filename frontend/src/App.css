@@ -756,3 +756,44 @@
 .full-width {
   grid-column: 1 / -1;
 }
+.report-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.report-form input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.report-form button {
+  padding: 10px 16px;
+  border: none;
+  background: #111;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.report-table {
+  display: grid;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.report-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  background: #f3f4f6;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.report-head {
+  background: #111;
+  color: white;
+  font-weight: bold;
+}

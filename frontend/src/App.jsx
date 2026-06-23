@@ -3,6 +3,7 @@ import AdminPanel from "./components/AdminPanel";
 import { useEffect, useState } from "react";
 import "./App.css";
 import { loginApi } from "./api/authApi";
+import { getSalesReportApi } from "./api/reportApi";
 import {
   getUsersApi,
   createUserApi,
@@ -58,6 +59,11 @@ function App() {
     password: "",
     role: "cashier",
   });
+  const [salesReport, setSalesReport] = useState(null);
+const [reportFilters, setReportFilters] = useState({
+  start: "",
+  end: "",
+});
 
   const [editingUser, setEditingUser] = useState(null);
   const [editUserForm, setEditUserForm] = useState({
@@ -182,7 +188,20 @@ const fetchDashboard = async () => {
       alert(err.response?.data?.error || "User create error");
     }
   };
+const fetchSalesReport = async (e) => {
+  if (e) e.preventDefault();
 
+  try {
+    const res = await getSalesReportApi(
+      reportFilters.start,
+      reportFilters.end
+    );
+
+    setSalesReport(res.data);
+  } catch (err) {
+    alert(err.response?.data?.error || "Report fetch failed");
+  }
+};
   const startEditUser = (item) => {
     setEditingUser(item);
     setEditUserForm({
@@ -450,6 +469,10 @@ const fetchDashboard = async () => {
           deleteProduct={deleteProduct}
           dashboard={dashboard}
           fetchDashboard={fetchDashboard}
+          reportFilters={reportFilters}
+          setReportFilters={setReportFilters}
+          salesReport={salesReport}
+          fetchSalesReport={fetchSalesReport}
         />
       )}
 
