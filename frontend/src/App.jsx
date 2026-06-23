@@ -1,9 +1,15 @@
 import { getTodayDashboardApi } from "./api/dashboardApi";
 import AdminPanel from "./components/AdminPanel";
 import { useEffect, useState } from "react";
+import Sidebar from "./components/Sidebar";
+import Topbar from "./components/Topbar";
 import "./App.css";
 import { loginApi } from "./api/authApi";
-import { getSalesReportApi } from "./api/reportApi";
+
+import {
+  getSalesReportApi,
+  getInvoiceDetailApi,
+} from "./api/reportApi";
 import {
   getUsersApi,
   createUserApi,
@@ -156,6 +162,14 @@ const [reportFilters, setReportFilters] = useState({
       alert(err.response?.data?.error || "Login failed");
     }
   };
+  const openInvoiceDetail = async (id) => {
+  try {
+    const res = await getInvoiceDetailApi(id);
+    setInvoice(res.data);
+  } catch (err) {
+    alert(err.response?.data?.error || "Invoice detail failed");
+  }
+};
 const fetchDashboard = async () => {
   try {
     const res = await getTodayDashboardApi();
@@ -411,33 +425,19 @@ const fetchSalesReport = async (e) => {
   }
 
   return (
-    <div className="pos-shell">
-      <header className="pos-header">
-        <div>
-          <h1>🎱 Snooker POS</h1>
-          <p>Drag a table from the sidebar into the main play area.</p>
-        </div>
+  <div className="modern-shell">
+    <Sidebar user={user} onLogout={logout} />
 
-        <div>
-          <span style={{ marginRight: "15px" }}>
-            Welcome, {user?.username}
-          </span>
-
-          <button onClick={logout}>Logout</button>
-        </div>
-
-        {user?.role === "admin" && (
-          <button
-            onClick={() => {
-              setShowAdminPanel(!showAdminPanel);
-              fetchUsers();
-              fetchProducts();
-            }}
-          >
-            Admin Panel
-          </button>
-        )}
-      </header>
+    <main className="modern-main">
+      <Topbar
+        user={user}
+        onAdminPanel={() => {
+          setShowAdminPanel(!showAdminPanel);
+          fetchUsers();
+          fetchProducts();
+          fetchDashboard();
+        }}
+      />
 
       {showAdminPanel && user?.role === "admin" && (
         <AdminPanel
@@ -473,103 +473,114 @@ const fetchSalesReport = async (e) => {
           setReportFilters={setReportFilters}
           salesReport={salesReport}
           fetchSalesReport={fetchSalesReport}
+          openInvoiceDetail={openInvoiceDetail}
         />
       )}
 
-      <div className="layout">
-        <aside className="sidebar">
-          <div className="section-header">
-            <div>
-              <h2>Tables</h2>
-              <p>{availableTables.length} available</p>
-            </div>
+      <section className="image-style-section">
+        <div className="section-title-row">
+          <div>
+            <h2>🎱 Snooker Tables</h2>
+            <p>Manage all snooker tables</p>
+          </div>
+        </div>
 
-            <span className="badge">18</span>
+        <div className="stage-grid">
+          {allTables.slice(0, 4).map((table) => {
+            const status = tableStatusMap[table.table_id];
+            const isRunning = status?.table_status?.trim() === "running";
+
+            return (
+              <TableCard
+                key={table.table_id}
+                tableId={table.table_id}
+                table={table}
+                status={status}
+                isRunning={isRunning}
+                onReturn={() => {}}
+                onStart={startGame}
+                onEnd={endGame}
+                onAddProduct={(status) => {
+                  setOrderTable(status);
+                  fetchProducts();
+                }}
+              />
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="image-style-section compact-products-section">
+        <div className="section-title-row">
+          <div>
+            <h2>🛒 Products</h2>
+            <p>Manage products and inventory</p>
           </div>
 
-          <div className="table-list">
-            {availableTables.map((table) => {
-              const status = tableStatusMap[table.table_id];
-              const isRunning = status?.table_status?.trim() === "running";
-
-              return (
-                <button
-                  key={table.table_id}
-                  className={`table-button ${isRunning ? "running" : "ready"}`}
-                  draggable
-                  onDragStart={handleDragStart(table.table_id)}
-                  onDragEnd={handleDragEnd}
-                  type="button"
-                >
-                  <div>
-                    <strong>{table.table_name}</strong>
-                    <p>{isRunning ? "Occupied" : "Available"}</p>
-                  </div>
-
-                  <span className="status-pill">
-                    {isRunning ? "Live" : "Ready"}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </aside>
-
-        <main className="stage">
-          <div className="stage-header">
-            <div>
-              <h2>Table Layout</h2>
-              <p>Drop tables here to arrange them on the main board.</p>
-            </div>
-          </div>
-
-          <div
-            className={`stage-dropzone ${draggingTable ? "drag-over" : ""}`}
-            onDragOver={handleDragOver}
-            onDrop={handleDropOnStage}
+          <button
+            className="add-table-btn"
+            onClick={() => {
+              setShowAdminPanel(true);
+              setAdminTab("products");
+              fetchProducts();
+            }}
           >
-            <div className="drop-label">
-              {stageTables.length
-                ? "Release to place table in the play area"
-                : "Drag a table here from the left sidebar"}
+            + Add Product
+          </button>
+        </div>
+
+        <div className="modern-product-grid">
+          {products.slice(0, 5).map((product) => (
+            <div className="modern-product-card" key={product.id}>
+              <div className="product-emoji">
+                {product.name?.toLowerCase().includes("water")
+                  ? "💧"
+                  : product.name?.toLowerCase().includes("tea")
+                  ? "☕"
+                  : product.name?.toLowerCase().includes("coffee")
+                  ? "☕"
+                  : product.name?.toLowerCase().includes("chips")
+                  ? "🍟"
+                  : product.name?.toLowerCase().includes("milk")
+                  ? "🥛"
+                  : "🥤"}
+              </div>
+
+              <div className="product-info">
+                <h3>{product.name}</h3>
+                <p>📦 Stock: {product.stock}</p>
+                <strong>Rs {product.price}</strong>
+              </div>
             </div>
+          ))}
+        </div>
+      </section>
 
-            {stageTables.length === 0 ? (
-              <div className="empty-stage">
-                <span>Empty play area</span>
-              </div>
-            ) : (
-              <div className="stage-grid">
-                {stageTables.map((tableId) => {
-                  const table = allTables.find(
-                    (item) => item.table_id === tableId
-                  );
+      <section className="dashboard-grid summary-row">
+        <div className="dashboard-card">
+          <h3>Total Tables</h3>
+          <h2>{TOTAL_TABLES}</h2>
+          <p>All Snooker Tables</p>
+        </div>
 
-                  const status = tableStatusMap[tableId];
-                  const isRunning = status?.table_status?.trim() === "running";
+        <div className="dashboard-card">
+          <h3>Active Sessions</h3>
+          <h2>{tables.filter((t) => t.session_status === "running").length}</h2>
+          <p>Currently Running</p>
+        </div>
 
-                  return (
-                    <TableCard
-                      key={tableId}
-                      tableId={tableId}
-                      table={table}
-                      status={status}
-                      isRunning={isRunning}
-                      onReturn={handleReturnToSidebar}
-                      onStart={startGame}
-                      onEnd={endGame}
-                      onAddProduct={(status) => {
-                        setOrderTable(status);
-                        fetchProducts();
-                      }}
-                    />
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </main>
-      </div>
+        <div className="dashboard-card">
+          <h3>Total Products</h3>
+          <h2>{products.length}</h2>
+          <p>In Inventory</p>
+        </div>
+
+        <div className="dashboard-card">
+          <h3>Total Users</h3>
+          <h2>{users.length || 0}</h2>
+          <p>System Users</p>
+        </div>
+      </section>
 
       <InvoicePopup invoice={invoice} onClose={() => setInvoice(null)} />
 
@@ -584,8 +595,9 @@ const fetchSalesReport = async (e) => {
           setOrderForm({ product_id: "", quantity: 1 });
         }}
       />
-    </div>
-  );
+    </main>
+  </div>
+);
 }
 
 export default App;

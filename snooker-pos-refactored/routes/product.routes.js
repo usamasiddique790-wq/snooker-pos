@@ -7,11 +7,13 @@ const {
   deleteProduct,
   addProductToSession,
   getSessionProducts,
+  getLowStockProducts,
 } = require("../controllers/product.controller");
 
 const router = express.Router();
 
 router.get("/products", verifyToken, getProducts);
+router.get("/products/low-stock", verifyToken, getLowStockProducts);
 router.post("/products", verifyToken, createProduct);
 router.put("/products/:id", verifyToken, updateProduct);
 router.delete("/products/:id", verifyToken, deleteProduct);

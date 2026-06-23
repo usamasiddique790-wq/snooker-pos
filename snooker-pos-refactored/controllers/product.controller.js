@@ -125,7 +125,22 @@ const addProductToSession = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+const getLowStockProducts = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT *
+      FROM products
+      WHERE stock <= 5
+      ORDER BY stock ASC
+      `
+    );
 
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 const getSessionProducts = async (req, res) => {
   try {
     const { session_id } = req.params;
@@ -155,4 +170,5 @@ module.exports = {
   deleteProduct,
   addProductToSession,
   getSessionProducts,
+  getLowStockProducts,
 };

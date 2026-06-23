@@ -3,6 +3,7 @@ function Reports({
   setReportFilters,
   salesReport,
   fetchSalesReport,
+  openInvoiceDetail,
 }) {
   return (
     <div className="reports-panel">
@@ -67,15 +68,27 @@ function Reports({
             </div>
 
             {salesReport.invoices?.map((invoice) => (
-              <div className="report-row" key={invoice.id}>
-                <span>#{invoice.id}</span>
-                <span>Table {invoice.table_id}</span>
-                <span>{invoice.duration_minutes ?? 0} min</span>
-                <span>Rs {invoice.game_amount}</span>
-                <span>Rs {invoice.products_amount}</span>
-                <span>Rs {invoice.grand_total}</span>
-              </div>
-            ))}
+  <div className="report-row" key={invoice.id}>
+    <span>#{invoice.id}</span>
+
+    <span>Table {invoice.table_id}</span>
+
+    <span>{invoice.duration_minutes ?? 0} min</span>
+
+    <span>Rs {invoice.game_amount}</span>
+
+    <span>Rs {invoice.products_amount}</span>
+
+    <span>Rs {invoice.grand_total}</span>
+
+    <button
+      className="edit-user-btn"
+      onClick={() => openInvoiceDetail(invoice.id)}
+    >
+      View / Print
+    </button>
+  </div>
+))}
           </div>
         </>
       )}

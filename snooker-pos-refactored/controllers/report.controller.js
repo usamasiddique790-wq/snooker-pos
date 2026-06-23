@@ -69,7 +69,59 @@ COALESCE(SUM(sp.total), 0) AS products_amount,
     res.status(500).json({ error: err.message });
   }
 };
+const getInvoiceDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const sessionResult = await pool.query(
+      `
+      SELECT *
+      FROM sessions
+      WHERE id = $1
+      `,
+      [id]
+    );
+
+    if (sessionResult.rows.length === 0) {
+      return res.status(404).json({ error: "Invoice not found" });
+    }
+
+    const productsResult = await pool.query(
+      `
+      SELECT
+        sp.quantity,
+        sp.price,
+        sp.total,
+        p.name
+      FROM session_products sp
+      JOIN products p ON p.id = sp.product_id
+      WHERE sp.session_id = $1
+      ORDER BY sp.id ASC
+      `,
+      [id]
+    );
+
+    const session = sessionResult.rows[0];
+
+    const gameTotal = Number(session.amount || 0);
+    const productsTotal = productsResult.rows.reduce(
+      (sum, item) => sum + Number(item.total),
+      0
+    );
+
+    res.json({
+      session,
+      products: productsResult.rows,
+      game_total: gameTotal,
+      products_total: productsTotal,
+      grand_total: gameTotal + productsTotal,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
 module.exports = {
   getSalesReport,
+  getInvoiceDetail,
 };

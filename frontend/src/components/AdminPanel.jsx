@@ -36,6 +36,7 @@ function AdminPanel({
   setEditingProduct,
   startEditProduct,
   deleteProduct,
+  openInvoiceDetail,
 }) {
   return (
     <div className="admin-panel">
@@ -84,6 +85,7 @@ function AdminPanel({
 >
   Reports
 </button>
+
       </div>
 
       {adminTab === "users" && (
@@ -126,6 +128,7 @@ function AdminPanel({
     setReportFilters={setReportFilters}
     salesReport={salesReport}
     fetchSalesReport={fetchSalesReport}
+    openInvoiceDetail={openInvoiceDetail}
   />
 )}
     </div>

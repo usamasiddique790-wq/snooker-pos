@@ -8,57 +8,56 @@ function TableCard({
   onEnd,
   onAddProduct,
 }) {
+  const liveMinutes = status?.duration_minutes ?? 0;
+  const liveAmount = status?.live_amount ?? "0";
+
   return (
-    <section className="stage-card">
-      <div className="stage-card-top">
-        <div>
+    <section className="modern-table-card">
+      <div className="table-image">
+        <span className={`table-badge ${isRunning ? "orange" : "green"}`}>
+          {isRunning ? "In Session" : "Available"}
+        </span>
+
+        <span className="table-number">{tableId}</span>
+      </div>
+
+      <div className="table-card-body">
+        <div className="table-title-row">
           <h3>{table.table_name}</h3>
-          <p>{isRunning ? "Occupied" : "Ready"}</p>
+
+          <span className={isRunning ? "dot orange-dot" : "dot green-dot"}>
+            {isRunning ? "Running" : "Available"}
+          </span>
         </div>
 
-        <span className="pill">{isRunning ? "Live" : "Idle"}</span>
-      </div>
-
-      <div className="stage-details">
-        <div>
-          <strong>Rate</strong>
-          <span>Rs {status?.hourly_rate ?? "--"}/hr</span>
+        <div className="table-meta">
+          <p>📦 Rate: <strong>Rs {status?.hourly_rate ?? "--"} / hour</strong></p>
+          <p>⏱ {liveMinutes} min running</p>
+          <p>💰 Live Bill: <strong>Rs {liveAmount}</strong></p>
+          <p>🎫 Session: {status?.session_id ?? "none"}</p>
         </div>
 
-        <div>
-          <strong>Bill</strong>
-          <span>Rs {status?.live_amount ?? "0"}</span>
-        </div>
-
-        <div>
-          <strong>Session</strong>
-          <span>{status?.session_id ?? "none"}</span>
-        </div>
-      </div>
-
-      <div className="stage-actions">
-        <button className="small-button secondary" onClick={() => onReturn(tableId)}>
-          Return
-        </button>
-
-        {isRunning ? (
-          <>
-            <button className="small-button" onClick={() => onAddProduct(status)}>
-              Add Product
-            </button>
-
-            <button
-              className="small-button danger"
-              onClick={() => onEnd(status.session_id)}
-            >
-              End Game
-            </button>
-          </>
-        ) : (
-          <button className="small-button" onClick={() => onStart(tableId)}>
-            Start Game
+        <div className="table-card-actions">
+          <button className="action-btn neutral" onClick={() => onReturn(tableId)}>
+            ↩ Return
           </button>
-        )}
+
+          {isRunning ? (
+            <>
+              <button className="action-btn blue" onClick={() => onAddProduct(status)}>
+                + Product
+              </button>
+
+              <button className="action-btn red" onClick={() => onEnd(status.session_id)}>
+                End
+              </button>
+            </>
+          ) : (
+            <button className="action-btn green" onClick={() => onStart(tableId)}>
+              Start
+            </button>
+          )}
+        </div>
       </div>
     </section>
   );

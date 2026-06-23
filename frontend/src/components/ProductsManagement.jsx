@@ -11,9 +11,29 @@ function ProductsManagement({
   startEditProduct,
   deleteProduct,
 }) {
+  const getProductEmoji = (name = "") => {
+    const lower = name.toLowerCase();
+
+    if (lower.includes("water")) return "💧";
+    if (lower.includes("tea")) return "☕";
+    if (lower.includes("coffee")) return "☕";
+    if (lower.includes("chips")) return "🍟";
+    if (lower.includes("pepsi") || lower.includes("drink")) return "🥤";
+    if (lower.includes("milk")) return "🥛";
+
+    return "📦";
+  };
+
   return (
-    <div className="products-panel">
-      <form className="user-form" onSubmit={createProduct}>
+    <div className="products-panel modern-products-panel">
+      <div className="products-header">
+        <div>
+          <h2>🛒 Products</h2>
+          <p>Manage products and inventory</p>
+        </div>
+      </div>
+
+      <form className="product-form-modern" onSubmit={createProduct}>
         <input
           type="text"
           placeholder="Product Name"
@@ -62,11 +82,11 @@ function ProductsManagement({
           }
         />
 
-        <button type="submit">Add Product</button>
+        <button type="submit">+ Add Product</button>
       </form>
 
       {editingProduct && (
-        <form className="user-form edit-form" onSubmit={updateProduct}>
+        <form className="product-form-modern edit-product-card" onSubmit={updateProduct}>
           <input
             type="text"
             placeholder="Product Name"
@@ -130,35 +150,42 @@ function ProductsManagement({
             }
           />
 
-          <button type="submit">Save Product</button>
-
+          <button type="submit">Save</button>
           <button type="button" onClick={() => setEditingProduct(null)}>
             Cancel
           </button>
         </form>
       )}
 
-      <div className="products-table">
+      <div className="modern-product-grid">
         {products.map((product) => (
-          <div className="product-row" key={product.id}>
-            <span>{product.name}</span>
-            <span>Rs {product.price}</span>
-            <span>Stock: {product.stock}</span>
-            <span>{product.category || "No Category"}</span>
+          <div className="modern-product-card" key={product.id}>
+            <div className="product-emoji">
+              {getProductEmoji(product.name)}
+            </div>
 
-            <button
-              className="edit-user-btn"
-              onClick={() => startEditProduct(product)}
-            >
-              Edit
-            </button>
+            <div className="product-info">
+              <h3>{product.name}</h3>
+              <p>📦 Stock: {product.stock}</p>
+              <strong>Rs {product.price}</strong>
+              <small>{product.category || "No Category"}</small>
+            </div>
 
-            <button
-              className="delete-user-btn"
-              onClick={() => deleteProduct(product.id)}
-            >
-              Delete
-            </button>
+            <div className="product-actions">
+              <button
+                className="mini-btn blue"
+                onClick={() => startEditProduct(product)}
+              >
+                ✎
+              </button>
+
+              <button
+                className="mini-btn red"
+                onClick={() => deleteProduct(product.id)}
+              >
+                🗑
+              </button>
+            </div>
           </div>
         ))}
       </div>
