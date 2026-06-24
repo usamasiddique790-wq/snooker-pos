@@ -1766,3 +1766,32 @@ body {
     display: none !important;
   }
 }
+.print-only {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .print-only,
+  .print-only * {
+    visibility: visible;
+  }
+
+  .print-only {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 320px;
+    padding: 20px;
+    background: white;
+    color: black;
+  }
+
+  .sales-print-main-btn {
+    display: none !important;
+  }
+}

@@ -13,6 +13,13 @@ import {
   getSalesReportApi,
   getInvoiceDetailApi,
 } from "./api/reportApi";
+
+import {
+  getExpensesApi,
+  addExpenseApi,
+  deleteExpenseApi,
+} from "./api/expenseApi";
+
 import {
   addCreditApi,
   getCreditsApi,
@@ -61,7 +68,13 @@ function App() {
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
+const [expenses, setExpenses] = useState([]);
 
+const [newExpense, setNewExpense] = useState({
+  title: "",
+  amount: "",
+  notes: "",
+});
   const [newTable, setNewTable] = useState({
   table_name: "",
   hourly_rate: 300,
@@ -157,6 +170,7 @@ const [reportFilters, setReportFilters] = useState({
   fetchUsers();
   fetchProducts();
   fetchDashboard();
+  fetchExpenses();
 };
 
 const saveCredit = async (data) => {
@@ -210,6 +224,56 @@ const fetchCredits = async () => {
     setCredits(res.data);
   } catch (err) {
     alert(err.response?.data?.error || "Credits fetch failed");
+  }
+};
+const fetchExpenses = async () => {
+  try {
+    const res = await getExpensesApi();
+    setExpenses(res.data);
+  } catch (err) {
+    alert(err.response?.data?.error || "Expenses fetch failed");
+  }
+};
+
+const createExpense = async (e) => {
+  e.preventDefault();
+
+  try {
+    await addExpenseApi(newExpense);
+
+    setNewExpense({
+      title: "",
+      amount: "",
+      notes: "",
+    });
+
+    await fetchExpenses();
+
+    if (reportFilters.start && reportFilters.end) {
+      const res = await getSalesReportApi(
+        reportFilters.start,
+        reportFilters.end
+      );
+
+      setSalesReport(res.data);
+    }
+
+    alert("Expense added successfully");
+  } catch (err) {
+    alert(err.response?.data?.error || "Expense add failed");
+  }
+};
+
+const deleteExpense = async (id) => {
+  if (!window.confirm("Delete this expense?")) return;
+
+  try {
+    await deleteExpenseApi(id);
+    await fetchExpenses();
+
+    alert("Expense deleted successfully");
+  } catch (err) {
+    alert(err.response?.data?.error || "Expense delete failed");
   }
 };
   const fetchTables = async () => {
@@ -605,7 +669,13 @@ const fetchSalesReport = async (e) => {
           credits={credits}
           fetchCredits={fetchCredits}
           addCreditPayment={addCreditPayment}
-deleteCredit={deleteCredit}
+          deleteCredit={deleteCredit}
+          expenses={expenses}
+          newExpense={newExpense}
+          setNewExpense={setNewExpense}
+          createExpense={createExpense}
+          deleteExpense={deleteExpense}
+          fetchExpenses={fetchExpenses}
         />
       )}
 

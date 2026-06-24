@@ -4,6 +4,7 @@ import ProductsManagement from "./ProductsManagement";
 import Credits from "./Credits";
 import Reports from "./Reports";
 import TablesManagement from "./TablesManagement";
+import Expenses from "./Expenses";
 
 function AdminPanel({
   adminTab,
@@ -48,7 +49,13 @@ updateTableRates,
 credits,
 fetchCredits,
 addCreditPayment,
-deleteCredit
+deleteCredit,
+expenses,
+newExpense,
+setNewExpense,
+createExpense,
+deleteExpense,
+fetchExpenses,
 }) {
   return (
     <div className="admin-panel">
@@ -110,6 +117,15 @@ deleteCredit
   onClick={() => setAdminTab("tables")}
 >
   Tables
+</button>
+<button
+  className={adminTab === "expenses" ? "active-tab" : ""}
+  onClick={() => {
+    setAdminTab("expenses");
+    fetchExpenses();
+  }}
+>
+  Expenses
 </button>
 
       </div>
@@ -173,6 +189,16 @@ deleteCredit
     fetchCredits={fetchCredits}
     addCreditPayment={addCreditPayment}
     deleteCredit={deleteCredit}
+  />
+)}
+{adminTab === "expenses" && (
+  <Expenses
+    expenses={expenses}
+    newExpense={newExpense}
+    setNewExpense={setNewExpense}
+    createExpense={createExpense}
+    deleteExpense={deleteExpense}
+    fetchExpenses={fetchExpenses}
   />
 )}
     </div>
